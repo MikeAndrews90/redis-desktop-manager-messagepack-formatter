@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using MessagePack;
 using Newtonsoft.Json;
 
@@ -28,13 +29,17 @@ namespace RedisMessagePackFormatter
                 var bytes = Convert.FromBase64CharArray(input.ToCharArray(), 0, input.Length);
                 var messagePackObject = MessagePackSerializer.Typeless.Deserialize(bytes);
                 var prettyJson = JsonConvert.SerializeObject(messagePackObject, Formatting.Indented);
-                Console.Write(JsonConvert.SerializeObject(new DecodeResponse(prettyJson)));
+                
+                // Convert to ASCII because that's all RDM supports
+                var asciiBytes = Encoding.ASCII.GetBytes(prettyJson);
+                var asciiPrettyJson = Encoding.ASCII.GetString(asciiBytes);
+                Console.Write(JsonConvert.SerializeObject(new DecodeResponse(asciiPrettyJson)));
             }
         }
 
         private static void OutputFormatterInfo()
         {
-            var info = new {version = "1.0.0", description = "MessagePack Formatter"};
+            var info = new {version = "1.1.0", description = "MessagePack Formatter"};
             Console.Write(JsonConvert.SerializeObject(info));
         }
     }
